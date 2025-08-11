@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>프로젝트 아이디어 소개</title>
+  </head>
+  <body>
+    <h1>프로젝트 목록</h1>
+    <div id="projects"></div>
+
+    <script>
+      const projectData = [
+        {
+          title: "환경 보호 앱 개발",
+          description: "사용자가 탄소 발자국을 줄이는 데 도움을 주는 앱입니다.",
+          skills: ["HTML", "CSS", "JavaScript"],
+          duration: "3개월",
+        },
+        {
+          title: "AI 기반 번역 도구",
+          description: "실시간으로 언어를 번역해주는 웹 애플리케이션.",
+          skills: ["Python", "TensorFlow", "JavaScript"],
+          duration: "6개월",
+        },
+      ];
+
+      //   function loadProjectData() {
+      //     fetch("db.json")
+      //       .then((response) => {
+      //         if (!response.ok) {
+      //           throw new Error("Json 파일을 불러올 수 없음");
+      //         }
+      //         return response.json();
+      //       })
+      //       .then((data) => {
+      //         createProject(data);
+      //       })
+      //       .catch((error) => {
+      //         console.error(error);
+      //         document.getElementById("projects").innerHTML =
+      //           "<p>데이터 오류</p>";
+      //       });
+      //   }
+
+      function createProject(data) {
+        const container = document.getElementById("projects");
+        let html = "";
+
+        for (let i = 0; i < projectData.length; i++) {
+          const project = projectData[i];
+
+          html += "<div>";
+          html += "<h2>" + project.title + "</h2>";
+          html += "<p>" + project.description + "</p>";
+
+          container.innerHTML = html;
+        }
+      }
+
+      //   loadProjectData();
+      createProject();
+    </script>
+  </body>
+</html>

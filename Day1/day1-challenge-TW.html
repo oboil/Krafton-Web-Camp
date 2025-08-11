@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>프로젝트 아이디어 소개</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@100..900&family=Stylish&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family: "Noto Sans KR", sans-serif;
+      }
+      h1 {
+        font-family: "Black Han Sans", sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="max-w-7xl mx-auto mt-8 px-4">
+      <h1 class="text-3xl font-bold mb-6">프로젝트 목록</h1>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="projects"></div>
+    </div>
+
+    <script>
+      const projectData = [
+        {
+          title: "환경 보호 앱 개발",
+          description: "사용자가 탄소 발자국을 줄이는 데 도움을 주는 앱입니다.",
+          skills: ["HTML", "CSS", "JavaScript"],
+          duration: "3개월",
+        },
+        {
+          title: "AI 기반 번역 도구",
+          description: "실시간으로 언어를 번역해주는 웹 애플리케이션.",
+          skills: ["Python", "TensorFlow", "JavaScript"],
+          duration: "6개월",
+        },
+      ];
+
+      const badgeColors = ["bg-yellow-500", "bg-blue-500", "bg-gray-800"];
+
+      function createProject() {
+        const container = document.getElementById("projects");
+        let html = "";
+
+        for (let i = 0; i < projectData.length; i++) {
+          const project = projectData[i];
+
+          html +=
+            "<div class='bg-white border border-gray-200 rounded-lg shadow-md h-full'>";
+          html += "<div class='p-6'>";
+          html +=
+            "<h2 class='text-xl font-semibold mb-3'> 제목: " +
+            project.title +
+            "</h2>";
+          html +=
+            "<p class='text-gray-700 mb-3'> 설명: " +
+            project.description +
+            "</p>";
+          html += "<p class='text-gray-700 mb-3'> 필요한 기술 스택: ";
+
+          for (let j = 0; j < project.skills.length; j++) {
+            const skill = project.skills[j];
+            const colorIndex = j % badgeColors.length;
+            html +=
+              "<span class='inline-block text-white text-sm px-3 py-1 rounded-full mr-1 " +
+              badgeColors[colorIndex] +
+              "'>" +
+              skill +
+              "</span>";
+          }
+
+          html += "</p>";
+          html +=
+            "<p class='text-gray-700'> 예상 완료 기간: " +
+            project.duration +
+            "</p>";
+          html += "</div>";
+          html += "</div>";
+        }
+
+        container.innerHTML = html;
+      }
+
+      createProject();
+    </script>
+  </body>
+</html>

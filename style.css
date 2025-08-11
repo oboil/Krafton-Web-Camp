@@ -1,0 +1,50 @@
+@import "~bootstrap/scss/bootstrap";
+
+@font-face {
+  font-family: "SBAggroB";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SBAggroB.woff")
+    format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.stylish-regular {
+  font-family: "Stylish", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.card-columns {
+  @media (max-width: 700px) {
+    column-count: 2;
+  }
+
+  @include media-breakpoint-only(lg) {
+    column-count: 3;
+  }
+  @include media-breakpoint-only(xl) {
+    column-count: 5;
+  }
+}
+
+* {
+  font-family: "Stylish", serif;
+}
+
+.card-title {
+  color: blue;
+  /* font-family: "SBAggroB", serif; */
+}
+
+.card-comments {
+  color: blueviolet;
+  font-weight: bold;
+}
+
+.posting-box {
+  width: 30%;
+  margin: 10px auto 30px auto;
+  border: 3px solid black;
+  border-radius: 5px;
+  padding: 50px;
+}
