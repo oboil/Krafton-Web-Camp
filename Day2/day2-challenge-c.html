@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>배틀그라운드 전적 검색</title>
+
+    <script
+      src="https://code.jquery.com/jquery-3.5.1.min.js"
+      integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .mode-stats {
+        border: 1px solid #ddd;
+        margin: 10px 0;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+      }
+      .total-stats {
+        background-color: #e7f3ff;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      input {
+        padding: 8px;
+        margin: 5px;
+      }
+      button {
+        padding: 8px 15px;
+      }
+      .loading {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+      }
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 10px auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <input type="text" name="" id="nickname" placeholder="닉네임" />
+    <input
+      type="text"
+      name=""
+      id="platform"
+      placeholder="플랫폼 (기본: steam)"
+    />
+    <button onclick="search()">검색</button>
+    <div id="info"></div>
+
+    <script>
+      function search(params) {
+        const playerName = document.getElementById("nickname").value;
+        const platform = document.getElementById("platform").value || "steam";
+
+        if (!playerName) {
+          alert("닉네임을 입력해주세요!");
+          return;
+        }
+
+        // 로딩 표시
+        $("#info").html(`
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>🔍 플레이어 정보를 검색하고 있습니다...</p>
+          </div>
+        `);
+
+        $.ajax({
+          type: "GET",
+          url: `https://api.pubg.com/shards/${platform}/players?filter[playerNames]=${playerName}`,
+          headers: {
+            Authorization: "API KEY",
+            Accept: "application/vnd.api+json",
+          },
+          success: function (response) {
+            $("#info").empty();
+
+            // 플레이어가 존재하지 않는 경우
+            if (!response.data || response.data.length === 0) {
+              $("#info").html(
+                `<p style="color: red;">❌ 플레이어 "${playerName}"를 찾을 수 없습니다.</p>`
+              );
+              return;
+            }
+
+            const playerId = response.data[0].id;
+            console.log(playerId);
+
+            // 시즌 통계 로딩 표시
+            $("#info").html(`
+              <div class="loading">
+                <div class="spinner"></div>
+                <p>📊 ${playerName}님의 전적을 불러오는 중...</p>
+              </div>
+            `);
+
+            $.ajax({
+              type: "GET",
+              url: `https://api.pubg.com/shards/${platform}/players/${playerId}/seasons/lifetime?filter[gamepad]=false`,
+              headers: {
+                Authorization: "API KEY",
+                Accept: "application/vnd.api+json",
+              },
+              success: function (response) {
+                const gameModeStatus = response.data.attributes.gameModeStats;
+
+                const modes = ["solo", "duo", "squad"];
+                let statsHtml = `<h2>${platform} 유저 ${playerName} 님의 전적</h2>`;
+
+                let totalRounds = 0,
+                  totalWins = 0,
+                  totalLosses = 0,
+                  totalKills = 0,
+                  totalDeaths = 0,
+                  totalSurvivalTime = 0;
+
+                // 전체 통계 계산
+                modes.forEach((mode) => {
+                  const modeData = gameModeStatus[mode];
+                  if (modeData.roundsPlayed > 0) {
+                    totalRounds += modeData.roundsPlayed;
+                    totalWins += modeData.wins;
+                    totalLosses += modeData.losses;
+                    totalKills += modeData.kills;
+                    totalDeaths += modeData.roundsPlayed - modeData.wins; // 죽은 횟수
+                    totalSurvivalTime += modeData.timeSurvived; // 총 생존 시간 (초)
+                  }
+                });
+
+                // 전체 통계 표시
+                const totalWinRate =
+                  totalRounds > 0
+                    ? ((totalWins / totalRounds) * 100).toFixed(2)
+                    : 0;
+                const totalKdr =
+                  totalDeaths > 0
+                    ? (totalKills / totalDeaths).toFixed(2)
+                    : totalKills;
+                const totalAvgSurvivalTime =
+                  totalRounds > 0
+                    ? (totalSurvivalTime / totalRounds / 60).toFixed(1)
+                    : 0; // 분 단위
+
+                statsHtml += `
+                  <div class="total-stats">
+                    <h3>📊 전체 통계</h3>
+                    <p><strong>총 ${totalRounds}경기 | ${totalWins}승 ${totalLosses}패</strong></p>
+                    <p>승률: ${totalWinRate}% | KDR: ${totalKdr} | 총 킬: ${totalKills}</p>
+                    <p><strong>총 평균 생존시간: ${totalAvgSurvivalTime}분</strong></p>
+                  </div>
+                `;
+
+                // 각 모드별 상세 통계
+                modes.forEach((mode) => {
+                  const modeData = gameModeStatus[mode];
+                  const roundsPlayed = modeData.roundsPlayed;
+
+                  if (roundsPlayed > 0) {
+                    const wins = modeData.wins;
+                    const losses = modeData.losses;
+                    const kills = modeData.kills;
+                    const deaths = roundsPlayed - wins; // 죽은 횟수
+                    const kdr =
+                      deaths > 0 ? (kills / deaths).toFixed(2) : kills;
+                    const winRate = ((wins / roundsPlayed) * 100).toFixed(2);
+                    const avgKills = (kills / roundsPlayed).toFixed(2);
+                    const top10Rate = (
+                      (modeData.top10s / roundsPlayed) *
+                      100
+                    ).toFixed(2);
+                    const avgSurvivalTime = (
+                      modeData.timeSurvived /
+                      roundsPlayed /
+                      60
+                    ).toFixed(1); // 분 단위
+
+                    statsHtml += `
+                      <div class="mode-stats">
+                        <h4>🎮 ${mode.toUpperCase()} 모드</h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                          <div>
+                            <strong>경기 수:</strong> ${roundsPlayed}<br>
+                            <strong>승리:</strong> ${wins}승<br>
+                            <strong>패배:</strong> ${losses}패<br>
+                            <strong>승률:</strong> ${winRate}%
+                          </div>
+                          <div>
+                            <strong>킬:</strong> ${kills}<br>
+                            <strong>데스:</strong> ${deaths}<br>
+                            <strong>KDR:</strong> ${kdr}<br>
+                            <strong>평균 킬:</strong> ${avgKills}/게임
+                          </div>
+                          <div>
+                            <strong>Top 10:</strong> ${
+                              modeData.top10s
+                            }회 (${top10Rate}%)<br>
+                            <strong>최고 킬:</strong> ${
+                              modeData.roundMostKills
+                            }킬<br>
+                            <strong>헤드샷:</strong> ${
+                              modeData.headshotKills
+                            }회<br>
+                            <strong>평균 생존:</strong> ${avgSurvivalTime}분
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }
+                });
+
+                // 플레이하지 않은 모드 체크
+                const unplayedModes = modes.filter(
+                  (mode) => gameModeStatus[mode].roundsPlayed === 0
+                );
+                if (unplayedModes.length > 0) {
+                  statsHtml += `<p style="color: #666; margin-top: 20px;">
+                    미플레이 모드: ${unplayedModes
+                      .map((mode) => mode.toUpperCase())
+                      .join(", ")}
+                  </p>`;
+                }
+
+                $("#info").html(statsHtml);
+              },
+              error: function (xhr, status, error) {
+                console.log("시즌 통계 에러:", xhr.status, error);
+                if (xhr.status === 400) {
+                  $("#info").html(
+                    `<p style="color: red;">❌ 잘못된 요청입니다. 플랫폼을 확인해주세요.</p>`
+                  );
+                } else if (xhr.status === 401) {
+                  $("#info").html(
+                    `<p style="color: red;">🔑 API 인증에 실패했습니다. API 키를 확인해주세요.</p>`
+                  );
+                } else if (xhr.status === 404) {
+                  $("#info").html(
+                    `<p style="color: red;">📊 해당 플레이어의 시즌 통계를 찾을 수 없습니다.</p>`
+                  );
+                } else if (xhr.status === 429) {
+                  $("#info").html(
+                    `<p style="color: red;">⏰ 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.</p>`
+                  );
+                } else {
+                  $("#info").html(
+                    `<p style="color: red;">❌ 시즌 통계를 불러올 수 없습니다: ${error} (${xhr.status})</p>`
+                  );
+                }
+              },
+            });
+          },
+          error: function (xhr, status, error) {
+            console.log("플레이어 검색 에러:", xhr.status, error);
+            if (xhr.status === 400) {
+              $("#info").html(
+                `<p style="color: red;">❌ 잘못된 요청입니다. 닉네임과 플랫폼을 확인해주세요.</p>`
+              );
+            } else if (xhr.status === 401) {
+              $("#info").html(
+                `<p style="color: red;">🔑 API 인증에 실패했습니다. API 키를 확인해주세요.</p>`
+              );
+            } else if (xhr.status === 404) {
+              $("#info").html(
+                `<p style="color: red;">👤 플레이어 "${playerName}"를 찾을 수 없습니다. 닉네임과 플랫폼을 확인해주세요.</p>`
+              );
+            } else if (xhr.status === 429) {
+              $("#info").html(
+                `<p style="color: red;">⏰ 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.</p>`
+              );
+            } else {
+              $("#info").html(
+                `<p style="color: red;">❌ 플레이어 검색에 실패했습니다: ${error} (${xhr.status})</p>`
+              );
+            }
+          },
+        });
+      }
+    </script>
+  </body>
+</html>
