@@ -1,5 +1,7 @@
 from bson import ObjectId
 from pymongo import MongoClient
+from dotenv import load_dotenv
+import os
 
 from flask import Flask, render_template, jsonify, request
 from flask.json.provider import JSONProvider
@@ -10,8 +12,8 @@ import sys
 
 app = Flask(__name__)
 
-# 아래 uri를 복사해둔 uri로 수정하기
-uri = "mongodb+srv://parkmisonme777:I2k7z6cLWTUw8AQ8@myjunglecluster.kxpq58a.mongodb.net/?retryWrites=true&w=majority&appName=MyJungleCluster&tlsAllowInvalidCertificates=true"
+load_dotenv()
+uri = os.getenv('MONGODB_URI')
 client = MongoClient(uri, 27017)  # MongoDB는 27017 포트로 돌아갑니다.
 db = client.jungle
 
