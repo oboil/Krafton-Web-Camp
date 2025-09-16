@@ -1,9 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
+from dotenv import load_dotenv
+import os
 
-# 여기 uri를 설정한 MongoDB로 연결해주세요!
-uri = "mongodb+srv://parkmisonme777:I2k7z6cLWTUw8AQ8@myjunglecluster.kxpq58a.mongodb.net/?retryWrites=true&w=majority&appName=MyJungleCluster&tlsAllowInvalidCertificates=true"
+load_dotenv()
+uri = os.getenv('MONGODB_URI')
 client = MongoClient(uri, 27017)
 db = client.chapter3 # 'dbjungle'라는 이름의 db를 만듭니다.
 

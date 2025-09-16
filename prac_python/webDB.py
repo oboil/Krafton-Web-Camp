@@ -1,9 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
 from pymongo import MongoClient           # pymongo를 임포트 하기(패키지 인스톨 먼저 해야겠죠?)
-    
-# 아래 uri를 복사해둔 uri로 수정하기
-uri = "mongodb+srv://parkmisonme777:I2k7z6cLWTUw8AQ8@myjunglecluster.kxpq58a.mongodb.net/?retryWrites=true&w=majority&appName=MyJungleCluster&tlsAllowInvalidCertificates=true"
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+uri = os.getenv('MONGODB_URI')
 client = MongoClient(uri, 27017)  # MongoDB는 27017 포트로 돌아갑니다.
 db = client.jungle                      # 'dbjungle'라는 이름의 db를 만듭니다.
     
