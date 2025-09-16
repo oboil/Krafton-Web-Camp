@@ -1,7 +1,8 @@
 # Krafton-Web-Camp
-### sprint1:
-### sprint2: 전국민 참여형 체감 온도 지도(https://github.com/oboil/Krafton-Web-Camp_Sprint2)
+##### sprint1:
+##### sprint2: 전국민 참여형 체감 온도 지도(https://github.com/oboil/Krafton-Web-Camp_Sprint2)
 
+#
 ## 참여 동기
 
 - 프론트엔드 개발자를 지망하는데, 그 역량을 다지고 프로젝트 경험을 쌓기 위함
